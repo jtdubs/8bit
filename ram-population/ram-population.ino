@@ -14,6 +14,9 @@ const int AddressPin7 = 19;
 const int ButtonPin = 11;
 const int ModePin = 10;
 
+// reset pin
+const int ResetPin = 0;
+
 
 /*
    Low-Level
@@ -21,8 +24,6 @@ const int ModePin = 10;
 
 // setup pins
 void setupRAM() {
-  Serial.println("Setting up for RAM population...");
-
   for (int pin = DataPin0; pin <= DataPin7; pin++) {
     digitalWrite(pin, LOW);
     pinMode(pin, OUTPUT);
@@ -38,12 +39,13 @@ void setupRAM() {
 
   digitalWrite(ButtonPin, HIGH);
   pinMode(ButtonPin, OUTPUT);
+
+  digitalWrite(ResetPin, LOW);
+  pinMode(ResetPin, OUTPUT);
 }
 
 // set pins back to high-impedence state
 void teardownRAM() {
-  Serial.println("Setting up for RAM population...");
-
   for (int pin = DataPin0; pin <= DataPin7; pin++) {
     pinMode(pin, INPUT);
   }
@@ -54,15 +56,12 @@ void teardownRAM() {
 
   pinMode(ModePin, INPUT);
   pinMode(ButtonPin, INPUT);
+
+  digitalWrite(ResetPin, HIGH);
 }
 
 // write a byte to RAM
 void writeRAM(byte addr, byte value) {
-  Serial.print("Setting RAM[0x");
-  Serial.print(addr, HEX);
-  Serial.print("] to 0x");
-  Serial.println(value, HEX);
-
   for (int pin = DataPin0; pin <= DataPin7; pin++) {
     digitalWrite(pin, value & 0x80);
     value <<= 1;
@@ -87,7 +86,7 @@ void writeRAM(byte addr, byte value) {
 void populateRAM(byte values[]) {
   for (int i = 0; i < 32; i++) {
     writeRAM(i, values[i]);
-    delay(1);
+    delay(100);
   }
 }
 
@@ -141,8 +140,6 @@ byte ramContents[32] = {
 };
 
 void setup() {
-  Serial.begin(115200);
-
   setupRAM();
   populateRAM(ramContents);
   teardownRAM();
